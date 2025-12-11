@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Documentação — Pushdown Operator: An Operator Proposal to Extend Regular Expressions to Denote Context Free Languages</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --secondary-color: #6c757d;
+      --success-color: #198754;
+      --warning-color: #ffc107;
+      --danger-color: #dc3545;
+      --light-bg: #f8f9fa;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --card-shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    code, pre {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      padding-bottom: 4rem;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      color: #212529;
+    }
+
+    .navbar {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%) !important;
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.3rem;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-link {
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: #fff !important;
+      transform: translateY(-2px);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #fff;
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    header {
+      background: linear-gradient(135deg, rgba(13, 110, 253, 0.05) 0%, rgba(13, 110, 253, 0.02) 100%);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      border-left: 4px solid var(--primary-color);
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-weight: 700;
+      font-size: 2.5rem;
+      color: #0d6efd;
+      margin-bottom: 1rem;
+      letter-spacing: -1px;
+    }
+
+    header .lead {
+      font-size: 1.15rem;
+      color: #495057;
+      font-weight: 400;
+    }
+
+    .toc {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 10px;
+      border-left: 3px solid var(--primary-color);
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+      transition: all 0.3s ease;
+    }
+
+    .toc:hover {
+      box-shadow: var(--card-shadow);
+    }
+
+    .toc h5 {
+      font-weight: 700;
+      color: #0d6efd;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .toc a {
+      text-decoration: none;
+      color: #495057;
+      display: block;
+      padding: 0.5rem 0;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      border-left: 2px solid transparent;
+      padding-left: 0.75rem;
+      margin-left: -0.75rem;
+    }
+
+    .toc a:hover {
+      color: var(--primary-color);
+      border-left-color: var(--primary-color);
+      padding-left: 1rem;
+    }
+
+    section {
+      margin-bottom: 3rem;
+    }
+
+    section h2 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #0d6efd;
+      margin-bottom: 1.5rem;
+      position: relative;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    section h2::before {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+      border-radius: 2px;
+    }
+
+    section h3 {
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: #212529;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    section h4 {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #0d6efd;
+      margin-top: 1.2rem;
+      margin-bottom: 0.8rem;
+    }
+
+    section h5 {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #212529;
+      margin-top: 1rem;
+      margin-bottom: 0.7rem;
+    }
+
+    section h6 {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #495057;
+      margin-top: 0.8rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+      border-top: 3px solid var(--primary-color);
+    }
+
+    .card:hover {
+      box-shadow: var(--card-shadow-hover);
+      transform: translateY(-4px);
+    }
+
+    .card h2 {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2::before {
+      display: none;
+    }
+
+    pre.code {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 8px;
+      overflow: auto;
+      border-left: 3px solid var(--primary-color);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #212529;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    pre.code::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    pre.code::-webkit-scrollbar-track {
+      background: #e9ecef;
+      border-radius: 3px;
+    }
+
+    pre.code::-webkit-scrollbar-thumb {
+      background: #0d6efd;
+      border-radius: 3px;
+    }
+
+    .example {
+      background: linear-gradient(135deg, #fff3cd 0%, #fffbf0 100%);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 3px solid #ffc107;
+      margin: 1.5rem 0;
+    }
+
+    .example strong {
+      color: #856404;
+      display: block;
+      margin-bottom: 0.8rem;
+      font-size: 0.95rem;
+    }
+
+    .example pre {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid #ffe69c;
+      margin: 0;
+    }
+
+    .info-box {
+      background: linear-gradient(135deg, #cfe2ff 0%, #f0f6ff 100%);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 3px solid #0d6efd;
+      margin: 1.5rem 0;
+    }
+
+    .info-box strong {
+      color: #084298;
+      display: block;
+      margin-bottom: 0.8rem;
+    }
+
+    ul, ol {
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.6rem;
+    }
+
+    ul li::marker {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    ol li::marker {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    code {
+      background: #f8f9fa;
+      color: #0d6efd;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+      border: 1px solid #e9ecef;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border: none;
+    }
+
+    .small-muted {
+      font-size: 0.85rem;
+      color: #6c757d;
+      font-weight: 400;
+      margin-top: 0.5rem;
+      display: block;
+    }
+
+    article {
+      background: #ffffff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 3px solid var(--primary-color);
+      transition: all 0.3s ease;
+    }
+
+    article:hover {
+      box-shadow: var(--card-shadow);
+    }
+
+    article h4 {
+      margin-top: 0;
+    }
+
+    .operator-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+    }
+
+    .operator-table th {
+      background: #0d6efd;
+      color: white;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .operator-table td {
+      padding: 1rem;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .operator-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .operator-table code {
+      background: #f8f9fa;
+      padding: 0.3rem 0.6rem;
+    }
+
+    footer {
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border-top: 1px solid #e9ecef;
+      padding: 2rem 0;
+      margin-top: 3rem;
+    }
+
+    footer small {
+      color: #6c757d;
+      font-weight: 400;
+    }
+
+    footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    footer a:hover {
+      color: #0b5ed7;
+      text-decoration: underline;
+    }
+
+    nav.sticky-top {
+      top: 0;
+      z-index: 1020;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2rem;
+      }
+
+      header {
+        padding: 2rem 1.5rem;
+      }
+
+      .toc {
+        position: static;
+        margin-bottom: 2rem;
+      }
+
+      section h2 {
+        font-size: 1.5rem;
+      }
+
+      section h3 {
+        font-size: 1.2rem;
+      }
+
+      .container {
+        padding: 0 1rem;
+      }
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    a:hover {
+      color: #0b5ed7;
+      text-decoration: underline;
+    }
+
+    .badge {
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    .breadcrumb {
+      background: transparent;
+      padding: 0;
+      margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb-item.active {
+      color: #0d6efd;
+      font-weight: 600;
+    }
+
+    .back-to-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary-color);
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .back-to-top:hover {
+      transform: translateY(-2px);
+      color: #0b5ed7;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 3px solid #0d6efd;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .feature-card h5 {
+      margin-top: 0;
+      color: #0d6efd;
+    }
+    
+    .formal-definition {
+      background: #f0f6ff;
+      border-left: 4px solid #0d6efd;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+      font-style: italic;
+    }
+
+    .formal-definition strong {
+      font-style: normal;
+      color: #0d6efd;
+    }
+
+    .syntax-highlight {
+      background: #f8f9fa;
+      border-left: 3px solid #0d6efd;
+      padding: 1rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <i class="fas fa-book-open me-2"></i>Pushdown Operator
+    </a>
+    <nav class="navbar navbar-dark bg-primary mb-4">
+      <div class="container d-flex justify-content-between">
+          <span class="navbar-brand">Documentação do Projeto</span>
+
+          <!-- BOTÃO HOME -->
+          <a href="/" class="btn btn-light">
+              Home
+          </a>
+      </div>
+  </nav>
+    <div class="collapse navbar-collapse" id="navmenu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="#introducao"><i class="fas fa-info-circle me-1"></i>Introdução</a></li>
+        <li class="nav-item"><a class="nav-link" href="#definicoes"><i class="fas fa-cube me-1"></i>Definições</a></li>
+        <li class="nav-item"><a class="nav-link" href="#operadores"><i class="fas fa-cube me-1"></i>Operadores</a></li>
+        <li class="nav-item"><a class="nav-link" href="#arquitetura"><i class="fas fa-sitemap me-1"></i>Arquitetura</a></li>
+        <li class="nav-item"><a class="nav-link" href="#api"><i class="fas fa-code me-1"></i>API</a></li>
+        <li class="nav-item"><a class="nav-link" href="#exemplos"><i class="fas fa-code me-1"></i>Exemplos</a></li>
+        <li class="nav-item"><a class="nav-link" href="#instalacao"><i class="fas fa-download me-1"></i>Instalação</a></li>
+        <li class="nav-item"><a class="nav-link" href="#faq"><i class="fas fa-question-circle me-1"></i>FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container my-5">
+  <header class="mb-5">
+    <h1><i class="fas fa-graduation-cap me-3"></i>Pushdown Operator</h1>
+    <p class="lead">An Operator Proposal to Extend Regular Expressions to Denote Context Free Languages</p>
+    <p class="text-muted mt-3"><strong>Autor:</strong> Guilherme da Cruz Oliveira | <strong>Orientador:</strong> Dr. Alexandre Tadeu Rossini da Silva | <strong>Co-orientador:</strong> Dr. Tanilson Dias dos Santos</p>
+  </header>
+
+  <section id="introducao" class="mb-5">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="toc">
+          <h5><i class="fas fa-bookmark me-2"></i>Índice</h5>
+          <nav>
+            <ul class="list-unstyled">
+              <li><a href="#introducao"><i class="fas fa-arrow-right me-2"></i>Introdução</a></li>
+              <li><a href="#definicoes"><i class="fas fa-arrow-right me-2"></i>Definições Formais</a></li>
+              <li><a href="#casos-uso"><i class="fas fa-arrow-right me-2"></i>Casos de Uso</a></li>
+              <li><a href="#operadores"><i class="fas fa-arrow-right me-2"></i>Operadores</a></li>
+              <li><a href="#arquitetura"><i class="fas fa-arrow-right me-2"></i>Arquitetura</a></li>
+              <li><a href="#api"><i class="fas fa-arrow-right me-2"></i>API de Programação</a></li>
+              <li><a href="#exemplos"><i class="fas fa-arrow-right me-2"></i>Exemplos Práticos</a></li>
+              <li><a href="#instalacao"><i class="fas fa-arrow-right me-2"></i>Instalação</a></li>
+              <li><a href="#faq"><i class="fas fa-arrow-right me-2"></i>FAQ</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <h3 id="visao-geral"><i class="fas fa-info-circle me-2"></i>Visão Geral</h3>
+        <p>O <strong>Pushdown Operator</strong> é uma proposta de extensão de expressões regulares através de operadores especiais que permitem denotar linguagens livres de contexto (context-free languages). Esta ferramenta didática e de pesquisa implementa os conceitos propostos no trabalho de conclusão de curso de Guilherme da Cruz Oliveira, apresentado à Universidade Federal do Tocantins em 2024.</p>
+        
+        <p>Diferentemente de expressões regulares tradicionais, que reconhecem apenas linguagens regulares, o Pushdown Operator permite definir linguagens livres de contexto através de uma notação compacta e intuitiva, gerando automaticamente os autômatos com pilha (Pushdown Automata - PDA) correspondentes.</p>
+
+        <h4>Objetivos Principais</h4>
+        <ul>
+          <li>Fornecer uma notação concisa para especificar linguagens livres de contexto</li>
+          <li>Gerar automaticamente autômatos com pilha a partir de expressões</li>
+          <li>Facilitar o ensino de linguagens formais e teoria da computação</li>
+          <li>Apoiar pesquisa em propriedades de linguagens livres de contexto</li>
+          <li>Permitir análise e visualização de autômatos gerados</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="definicoes" class="mb-5">
+    <h2><i class="fas fa-cube me-2"></i>Definições Formais</h2>
+    
+    <h4>Linguagens Livres de Contexto</h4>
+    <p>Uma linguagem é livre de contexto se existe uma gramática livre de contexto que a gera, ou equivalentemente, se existe um autômato com pilha que a reconhece. Formalmente:</p>
+    
+    <div class="formal-definition">
+      <strong>Definição:</strong> Uma linguagem <em>L</em> é livre de contexto se existe um autômato com pilha (PDA) <em>M</em> tal que <em>L = L(M)</em>, onde <em>L(M)</em> é a linguagem aceita por <em>M</em>.
+    </div>
+
+    <h4>Autômato com Pilha (PDA)</h4>
+    <p>Um autômato com pilha é uma máquina abstrata que estende autômatos finitos com uma pilha (stack) para armazenar símbolos.</p>
+    
+    <div class="formal-definition">
+      <strong>Definição:</strong> Um autômato com pilha é uma tupla <em>M = (Q, Σ, Γ, δ, q₀, Z₀, F)</em> onde:
+      <ul style="margin-top: 1rem;">
+        <li><em>Q</em> é um conjunto finito de estados</li>
+        <li><em>Σ</em> é o alfabeto de entrada</li>
+        <li><em>Γ</em> é o alfabeto da pilha</li>
+        <li><em>δ: Q × (Σ ∪ {ε}) × Γ → P(Q × Γ*)</em> é a função de transição</li>
+        <li><em>q₀ ∈ Q</em> é o estado inicial</li>
+        <li><em>Z₀ ∈ Γ</em> é o símbolo inicial da pilha</li>
+        <li><em>F ⊆ Q</em> é o conjunto de estados finais</li>
+      </ul>
+    </div>
+
+    <h4>Transição de Pilha</h4>
+    <p>Uma transição em um PDA é representada como:</p>
+    <div class="syntax-highlight">
+δ(q, a, X) = {(q', α₁), (q'', α₂), ...}
+    </div>
+    <p>Onde:</p>
+    <ul>
+      <li><em>q</em> é o estado atual</li>
+      <li><em>a ∈ Σ ∪ {ε}</em> é o símbolo lido (ou ε para transição vazia)</li>
+      <li><em>X ∈ Γ</em> é o símbolo desempilhado</li>
+      <li><em>q'</em> é o novo estado</li>
+      <li><em>α</em> é a sequência de símbolos a empilhar</li>
+    </ul>
+  </section>
+
+  <section id="casos-uso" class="mb-5">
+    <h2><i class="fas fa-target me-2"></i>Casos de Uso Reais</h2>
+    
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="feature-card">
+          <h5><i class="fas fa-chalkboard-user me-2"></i>Ensino de Linguagens Formais</h5>
+          <p>Demonstre visualmente como expressões matemáticas compactas se transformam em máquinas de estados complexas. Perfeito para aulas de teoria da computação.</p>
+          <p class="small-muted"><strong>Exemplo:</strong> Gerar um PDA que reconhece a linguagem <code>a^n b^n</code> (n ≥ 0) com uma simples expressão.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="feature-card">
+          <h5><i class="fas fa-flask me-2"></i>Pesquisa Acadêmica</h5>
+          <p>Prototipar operadores de pilha inovadores e testar propriedades teóricas como ambiguidade e irreversibilidade de linguagens.</p>
+          <p class="small-muted"><strong>Exemplo:</strong> Investigar se uma linguagem é inerentemente ambígua gerando múltiplos PDAs.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="feature-card">
+          <h5><i class="fas fa-bug me-2"></i>Depuração de Gramáticas</h5>
+          <p>Converta gramáticas em PDAs visuais para validar transformações e verificar se o reconhecedor funciona como esperado.</p>
+          <p class="small-muted"><strong>Exemplo:</strong> Validar uma gramática de linguagem de programação gerando seu PDA correspondente.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="feature-card">
+          <h5><i class="fas fa-file-code me-2"></i>Processamento de Padrões</h5>
+          <p>Localize e substitua padrões complexos em textos usando a API <code>pdogex</code> com suporte a operadores de pilha.</p>
+          <p class="small-muted"><strong>Exemplo:</strong> Encontrar e substituir expressões aritméticas aninhadas em um código-fonte.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="feature-card">
+          <h5><i class="fas fa-code-branch me-2"></i>Validação de Estruturas Aninhadas</h5>
+          <p>Reconheça estruturas aninhadas como parênteses balanceados, tags XML, ou blocos de código.</p>
+          <p class="small-muted"><strong>Exemplo:</strong> Validar que uma expressão matemática tem parênteses e colchetes corretamente balanceados.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="feature-card">
+          <h5><i class="fas fa-microscope me-2"></i>Análise de Linguagens Naturais</h5>
+          <p>Modelar estruturas gramaticais simples e testar reconhecimento de padrões linguísticos.</p>
+          <p class="small-muted"><strong>Exemplo:</strong> Reconhecer padrões de concordância em frases simples.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="operadores" class="mb-5">
+    <h2><i class="fas fa-cube me-2"></i>Operadores e Sintaxe</h2>
+    
+    <p>O Pushdown Operator propõe uma extensão de expressões regulares com operadores especiais para manipular a pilha:</p>
+
+    <h4>Operadores Básicos</h4>
+    <table class="operator-table">
+      <thead>
+        <tr>
+          <th>Operador</th>
+          <th>Símbolo</th>
+          <th>Descrição Formal</th>
+          <th>Exemplo</th>
+          <th>Precedência</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>União</td>
+          <td><code>+</code></td>
+          <td>L₁ ∪ L₂</td>
+          <td><code>a+b</code></td>
+          <td>0 (menor)</td>
+        </tr>
+        <tr>
+          <td>Concatenação</td>
+          <td><code>.</code></td>
+          <td>L₁ · L₂</td>
+          <td><code>a.b</code></td>
+          <td>1</td>
+        </tr>
+        <tr>
+        <td>Fechamento de Kleene</td>
+          <td><code>*</code></td>
+          <td>L*</td>
+          <td><code>a*</code></td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td>Sharp (Pilha)</td>
+          <td><code>#</code></td>
+          <td>Operador de pilha para balanceamento</td>
+          <td><code>a#b</code> → {aⁿbⁿ | n ≥ 0}</td>
+          <td>5 (maior)</td>
+        </tr>
+        <tr>
+          <td>Two-Points (Pilha)</td>
+          <td><code>:</code></td>
+          <td>Operador de pilha com símbolo BOS</td>
+          <td><code>(ab):a#b</code></td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td>Separador</td>
+          <td><code>;</code></td>
+          <td>Alternativas de operações de pilha</td>
+          <td><code>a:(b#c;d#e)</code></td>
+          <td>4</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Caracteres Especiais</h4>
+    <ul>
+      <li><code>&amp;</code> — Epsilon (ε), representa a cadeia vazia</li>
+      <li><code>\</code> — Escape para caracteres literais (ex.: <code>\)</code>, <code>\+</code>, <code>\#</code>)</li>
+      <li><code>( )</code> — Parênteses para agrupamento e precedência</li>
+    </ul>
+
+    <h4>Definição Formal dos Operadores de Pilha</h4>
+    
+    <div class="formal-definition">
+      <strong>Sharp (#):</strong> Dados dois PDAs M₁ e M₂, o operador sharp M₁#M₂ cria um novo PDA que reconhece cadeias onde a sequência de símbolos empilhados por M₁ é desempilhada por M₂, garantindo balanceamento.
+    </div>
+
+    <div class="formal-definition">
+      <strong>Two-Points (:):</strong> O operador two-points M₁:M₂ combina M₁ com M₂, introduzindo o símbolo BOS (Bottom-Of-Stack) 'Z' para garantir aceitação por pilha vazia ao final da computação.
+    </div>
+
+    <h4>Exemplos de Expressões</h4>
+    <div class="info-box">
+      <strong><i class="fas fa-lightbulb me-2"></i>Expressões Formais</strong>
+      <div class="syntax-highlight">
+# Linguagem {aⁿbⁿ | n ≥ 0}<br>
+(&amp;:a#b)<br>
+<br>
+# Linguagem {aⁿbⁿ | n ≥ 1}<br>
+(ab):a#b<br>
+<br>
+# Linguagem {a²ⁿbⁿ | n ≥ 0}<br>
+&amp;:(aa)#b<br>
+<br>
+# Palíndromos sobre {a,b}<br>
+(&amp;+a+b):(a#a;b#b)<br>
+<br>
+# Linguagem {aⁿbⁿcⁿ | n ≥ 0}<br>
+((&amp;:a#b):c#c)<br>
+<br>
+# Expressão aritmética com parênteses balanceados<br>
+(x(\+x)*):((x\+)*\()#(\)(\+x)*)(\+(...)*)*
+      </div>
+    </div>
+  </section>
+
+  <section id="arquitetura" class="mb-5">
+    <h2><i class="fas fa-sitemap me-2"></i>Arquitetura do Sistema</h2>
+    
+    <h4>Pipeline de Processamento</h4>
+    <p>O sistema implementa um pipeline de compilação que transforma expressões em autômatos com pilha:</p>
+    
+    <div class="syntax-highlight">
+Expressão Infixa (entrada do usuário)<br>
+        ↓<br>
+explicitarConcatenacao() — Insere operadores de concatenação implícitos<br>
+        ↓<br>
+infixaToPosfixa() — Converte para notação pós-fixa (Shunting-yard customizado)<br>
+        ↓<br>
+executarPosfixa() — Executa a pós-fixa construindo o PDA<br>
+        ↓<br>
+Automato (saída — PDA completo)<br>
+        ↓<br>
+imprimir_imagem() — Gera visualização via Graphviz<br>
+prepararXML() / salvarXML() — Exporta para formato JFLAP
+    </div>
+
+    <h4>Componentes Principais</h4>
+    
+    <article class="mb-3">
+      <h5><i class="fas fa-file-code me-2"></i>expression.py</h5>
+      <p>Implementa o compilador de expressões. Responsável pela conversão de expressões em PDAs:</p>
+      <ul>
+        <li><code>explicitarConcatenacao(infixa)</code> — Insere operadores de concatenação implícitos</li>
+        <li><code>infixaToPosfixa(infixa)</code> — Converte infixa para pós-fixa (Shunting-yard customizado)</li>
+        <li><code>executarPosfixa(posfixa)</code> — Executa a pós-fixa construindo o PDA</li>
+        <li><code>convertExpressionInPA(expression, path=None)</code> — Interface de alto nível</li>
+      </ul>
+    </article>
+
+    <article class="mb-3">
+      <h5><i class="fas fa-cube me-2"></i>gerador_de_automatos.py</h5>
+      <p>Implementa os operadores que constroem PDAs compostos:</p>
+      <ul>
+        <li><code>base(a)</code> — PDA básico para um símbolo</li>
+        <li><code>concatenacao(a1, a2)</code> — Concatenação de PDAs</li>
+        <li><code>uniao(a1, a2)</code> — União de PDAs</li>
+        <li><code>fechoDeKleene(a1)</code> — Fechamento de Kleene</li>
+        <li><code>sharp(a1, a2)</code> — Operador sharp para balanceamento</li>
+        <li><code>two_points(a1, a2)</code> — Operador two-points com BOS</li>
+      </ul>
+    </article>
+
+    <article class="mb-3">
+      <h5><i class="fas fa-square me-2"></i>Automato.py</h5>
+      <p>Define a classe que representa um PDA:</p>
+      <ul>
+        <li><code>alfabeto</code> — Σ (alfabeto de entrada)</li>
+        <li><code>estados</code> — Q (conjunto de estados)</li>
+        <li><code>transicoes</code> — δ (função de transição)</li>
+        <li><code>estadoInicial</code> — q₀ (estado inicial)</li>
+        <li><code>estadosFinais</code> — F (estados finais)</li>
+        <li><code>auxiliar</code> — Γ (alfabeto da pilha)</li>
+      </ul>
+      <p><strong>Métodos importantes:</strong></p>
+      <ul>
+        <li><code>imprimir()</code> — Exibe detalhes no console</li>
+        <li><code>imprimir_imagem(name)</code> — Gera PNG via Graphviz</li>
+        <li><code>prepararXML()</code> — Retorna string XML JFLAP</li>
+        <li><code>salvarXML(saida, path)</code> — Salva XML em disco</li>
+        <li><code>executar(palavra)</code> — Testa se uma palavra é aceita</li>
+      </ul>
+    </article>
+
+    <article class="mb-3">
+      <h5><i class="fas fa-code me-2"></i>pdogex.py</h5>
+      <p>API de alto nível com interface similar ao módulo <code>re</code> do Python:</p>
+      <ul>
+        <li><code>compile(expression)</code> — Compila uma expressão</li>
+        <li><code>fullmatch(string)</code> — Teste de aceitação completa</li>
+        <li><code>find(string)</code> — Busca primeira ocorrência</li>
+        <li><code>find_all(string)</code> — Busca todas as ocorrências</li>
+        <li><code>replace(string, replace)</code> — Substitui primeira ocorrência</li>
+        <li><code>replace_all(string, replace)</code> — Substitui todas as ocorrências</li>
+        <li><code>split(string)</code> — Divide string por padrão</li>
+        <li><code>subn(string, replace)</code> — Substitui e retorna contagem</li>
+      </ul>
+    </article>
+    
+    <article class="mb-3">
+      <h5><i class="fas fa-link me-2"></i>Transicoes.py</h5>
+      <p>Classe que representa uma transição do autômato com pilha:</p>
+      <ul>
+        <li>Estado de origem</li>
+        <li>Símbolo de entrada</li>
+        <li>Símbolo a desempilhar</li>
+        <li>Estado de destino</li>
+        <li>Símbolo a empilhar</li>
+      </ul>
+    </article>
+
+    <article class="mb-3">
+      <h5><i class="fas fa-layer-group me-2"></i>Pilha.py</h5>
+      <p>Implementação de uma pilha (stack) usada internamente para processamento de expressões.</p>
+    </article>
+
+    <article class="mb-3">
+      <h5><i class="fas fa-flask me-2"></i>app.py</h5>
+      <p>Aplicação Flask que fornece interface web para o sistema:</p>
+      <ul>
+        <li><code>GET/POST /</code> — Página principal para compilar expressões</li>
+        <li><code>GET/POST /testar</code> — Página para testar cadeias contra o autômato</li>
+      </ul>
+    </article>
+  </section>
+
+  <section id="api" class="mb-5">
+    <h2><i class="fas fa-code me-2"></i>API de Programação</h2>
+    
+    <h4>Compilação de Expressões</h4>
+    <pre class="code">from pdogex import pdogex
+
+p = pdogex()
+p.compile("(&amp;:a#b)")  # Compila expressão para {aⁿbⁿ | n ≥ 0}</pre>
+
+    <h4>Teste de Aceitação</h4>
+    <pre class="code"># Teste completo (fullmatch)
+print(p.fullmatch(""))         # True (n=0)
+print(p.fullmatch("ab"))       # True (n=1)
+print(p.fullmatch("aabb"))     # True (n=2)
+print(p.fullmatch("aab"))      # False (desbalanceado)</pre>
+
+    <h4>Busca e Correspondência</h4>
+    <pre class="code"># match() retorna posição do primeiro match
+pos = p.match("xxaabbxx")  # 2
+
+# search() retorna tupla (start, end)
+pos = p.search("xxaabbxx")  # (2, 6)
+
+# search_all() retorna lista de tuplas
+positions = p.search_all("aabbaaabbb")  # [(0, 4), (4, 8)]
+
+# finditer() retorna dicionários com span e match
+for item in p.finditer("aabbaaabbb"):
+    print(item)  # {'span': (0, 4), 'match': 'aabb'}
+
+# Encontra primeira ocorrência
+pos = p.find("xxaabbxx")       # (2, 6)
+
+# Encontra todas as ocorrências
+matches = p.find_all("aabbaaabbb")  # ["aabb", "aaa", "bbb"]</pre>
+
+    <h4>Substituição</h4>
+    <pre class="code"># Substitui primeira ocorrência
+resultado = p.replace("xxaabbxx", "MATCH")  # "xxMATCHxx"
+
+# Substitui todas as ocorrências
+resultado = p.replace_all("aabbaaabbb", "X")  # "XX"
+
+# subn() retorna (resultado, contagem)
+resultado, count = p.subn("aabbaaabbb", "X")  # ("XX", 2)</pre>
+
+    <h4>Divisão</h4>
+    <pre class="code"># split() divide string por padrão
+partes = p.split("aabbxxaabbxx")  # ["", "xx", "xx"]</pre>
+
+    <h4>Memoização</h4>
+    <p>A classe pdogex usa memoização automática para acelerar buscas repetidas:</p>
+    <pre class="code">p = pdogex()
+p.compile("(&amp;:a#b)")
+
+# Primeira chamada: executa o autômato
+p.fullmatch("aabb")  # Lento
+
+# Segunda chamada: usa cache
+p.fullmatch("aabb")  # Rápido
+
+# Limpar cache se necessário
+p.memo.clear()</pre>
+  </section>
+
+  <section id="exemplos" class="mb-5">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="card-title"><i class="fas fa-code me-2"></i>Exemplos Práticos</h2>
+
+        <h4 class="mt-4"><i class="fas fa-play me-2"></i>Exemplo 1: Linguagem {aⁿbⁿ | n ≥ 0}</h4>
+        <p>Reconhecer cadeias balanceadas de "a" e "b":</p>
+        <pre class="code">from pdogex import pdogex
+
+p = pdogex()
+p.compile("(&amp;:a#b)")
+
+print(p.fullmatch(""))         # True
+print(p.fullmatch("ab"))       # True
+print(p.fullmatch("aabb"))     # True
+print(p.fullmatch("aaabbb"))   # True
+print(p.fullmatch("aab"))      # False</pre>
+
+        <h4 class="mt-4"><i class="fas fa-play me-2"></i>Exemplo 2: Palíndromos</h4>
+        <p>Reconhecer palíndromos sobre {a, b}:</p>
+        <pre class="code">p = pdogex()
+p.compile("(&amp;+a+b):(a#a;b#b)")
+
+print(p.fullmatch(""))         # True
+print(p.fullmatch("a"))        # True
+print(p.fullmatch("aba"))      # True
+print(p.fullmatch("abba"))     # True
+print(p.fullmatch("aabaa"))    # True</pre>
+
+        <h4 class="mt-4"><i class="fas fa-play me-2"></i>Exemplo 3: Linguagem {a²ⁿbⁿ | n ≥ 0}</h4>
+        <p>Reconhecer cadeias com "a" em quantidade par (2n) e "b" em quantidade n:</p>
+        <pre class="code">p = pdogex()
+p.compile("&amp;:(aa)#b")
+
+print(p.fullmatch(""))         # True (n=0)
+print(p.fullmatch("aab"))      # True (n=1, 2 a's)
+print(p.fullmatch("aaaabb"))   # True (n=2, 4 a's)
+print(p.fullmatch("aaaaaabbb")) # True (n=3, 6 a's)
+print(p.fullmatch("aab"))      # False (1 a, não 2n)</pre>
+        
+        <h4 class="mt-4"><i class="fas fa-play me-2"></i>Exemplo 4: Expressões Aritméticas</h4>
+        <p>Reconhecer expressões aritméticas com parênteses balanceados:</p>
+        <pre class="code">p = pdogex()
+# Expressão: x(+x)* com parênteses balanceados
+p.compile("(x(\+x)*):((x\+)*\()#(\)(\+x)*)(\+(...)*)*")
+
+# Testes
+print(p.fullmatch("x"))           # True
+print(p.fullmatch("x+x"))         # True
+print(p.fullmatch("(x+x)"))       # True
+print(p.fullmatch("((x+x)+x)"))   # True
+print(p.fullmatch("(x+x"))        # False (parêntese não fechado)</pre>
+
+        <h4 class="mt-4"><i class="fas fa-play me-2"></i>Exemplo 5: Processamento de Texto</h4>
+        <p>Encontrar e substituir padrões em um texto:</p>
+        <pre class="code">p = pdogex()
+p.compile("a:(b#c)")
+
+texto = "meu nome é bac bac bac"
+
+# Encontrar todas as ocorrências
+matches = p.find_all(texto)
+print(matches)  # ['bac', 'bac', 'bac']
+
+# Substituir todas
+resultado = p.replace_all(texto, "XYZ")
+print(resultado)  # "meu nome é XYZ XYZ XYZ"
+
+# Contar substituições
+resultado, count = p.subn(texto, "XYZ")
+print(f"Substituídas {count} ocorrências")</pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="instalacao" class="mb-5">
+    <h2><i class="fas fa-download me-2"></i>Instalação e Configuração</h2>
+    
+    <h4>Pré-requisitos</h4>
+    <ul>
+      <li>Python 3.8 ou superior</li>
+      <li>pip (gerenciador de pacotes Python)</li>
+      <li>Graphviz instalado no sistema operacional</li>
+    </ul>
+
+    <h4>Instalação do Graphviz</h4>
+    <div class="info-box">
+      <strong><i class="fas fa-terminal me-2"></i>Diferentes Sistemas Operacionais</strong>
+      <div class="syntax-highlight">
+# Ubuntu/Debian<br>
+sudo apt-get update<br>
+sudo apt-get install graphviz<br>
+<br>
+# macOS (com Homebrew)<br>
+brew install graphviz<br>
+<br>
+# Windows (com Chocolatey)<br>
+choco install graphviz<br>
+<br>
+# Ou baixe em: https://graphviz.org/download/
+      </div>
+    </div>
+
+    <h4>Instalação das Dependências Python</h4>
+    <pre class="code">pip install -r requirements.txt</pre>
+
+    <h4>Estrutura de Diretórios</h4>
+    <p>Garanta que a seguinte estrutura exista:</p>
+    <div class="syntax-highlight">
+projeto/<br>
+├── app.py<br>
+├── expression.py<br>
+├── gerador_de_automatos.py<br>
+├── Automato.py<br>
+├── Transicoes.py<br>
+├── Pilha.py<br>
+├── pdogex.py<br>
+├── assets.py<br>
+├── static/          ← Pasta para imagens e arquivos JFLAP<br>
+├── templates/       ← Pasta para templates HTML (se usar Flask)<br>
+└── requirements.txt
+    </div>
+
+    <h4>Executar a Aplicação</h4>
+    <pre class="code"># Modo desenvolvimento
+python app.py
+
+# Acesse em http://localhost:5000</pre>
+
+    <h4>Usar como Biblioteca</h4>
+    <pre class="code">from pdogex import pdogex
+
+p = pdogex()
+p.compile("(&amp;:a#b)")
+print(p.fullmatch("aabb"))  # True</pre>
+  </section>
+
+  <section id="faq" class="mb-5">
+    <h2><i class="fas fa-question-circle me-2"></i>FAQ & Resolução de Problemas</h2>
+    
+    <div class="accordion" id="faqAccordion">
+      
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+            <i class="fas fa-exclamation-circle me-2 text-danger"></i>Erro: graphviz.backend.ExecutableNotFound
+          </button>
+        </h2>
+        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p><strong>Problema:</strong> O binário <code>dot</code> do Graphviz não está instalado ou não está no PATH.</p>
+            <p><strong>Solução:</strong> Instale Graphviz no seu sistema operacional (veja seção de Instalação acima).</p>
+            <p><strong>Verificar instalação:</strong></p>
+            <pre class="code">which dot    # Linux/macOS
+where dot    # Windows</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+            <i class="fas fa-exclamation-circle me-2 text-danger"></i>Erro: Parênteses não balanceados
+          </button>
+        </h2>
+        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p><strong>Problema:</strong> A expressão tem parênteses desbalanceados.</p>
+            <p><strong>Solução:</strong> Verifique se todos os parênteses abertos têm fechamento correspondente.</p>
+            <p><strong>Exemplos incorretos:</strong></p>
+            <ul>
+              <li><code>(a+b</code> — Falta fechar parêntese</li>
+              <li><code>a+b)</code> — Parêntese sem abertura</li>
+              <li><code>((a+b)</code> — Parêntese extra aberto</li>
+            </ul>
+            <p><strong>Exemplos corretos:</strong></p>
+            <ul>
+              <li><code>(a+b)</code></li>
+              <li><code>((a+b)+c)</code></li>
+              <li><code>(a+(b+c))</code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+            <i class="fas fa-exclamation-circle me-2 text-danger"></i>Como escapar caracteres especiais?
+          </button>
+        </h2>
+        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p><strong>Problema:</strong> Preciso usar caracteres como <code>+</code>, <code>#</code>, <code>*</code> como símbolos literais.</p>
+            <p><strong>Solução:</strong> Use barra invertida <code>\</code> para escapar:</p>
+            <pre class="code">\+    # Símbolo + literal
+\#    # Símbolo # literal
+\*    # Símbolo * literal
+\(    # Parêntese literal
+\)    # Parêntese literal</pre>
+            <p><strong>Exemplo:</strong> Expressão aritmética com operador +</p>
+            <pre class="code">x(\+x)*  # Reconhece: x, x+x, x+x+x, ...</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+            <i class="fas fa-exclamation-circle me-2 text-danger"></i>Qual é a diferença entre # e :?
+          </button>
+        </h2>
+        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p><strong>#</strong> — Operador de pilha básico. Empilha símbolos da primeira expressão e desempilha com a segunda.</p>
+            <pre class="code">a#b  # Reconhece a^n b^n (n ≥ 0)</pre>
+            <p><strong>:</strong> — Operador two-points. Combina com o símbolo BOS (Bottom-Of-Stack) 'Z' para garantir aceitação por pilha vazia.</p>
+            <pre class="code">(ab):a#b  # Reconhece a^n b^n (n ≥ 1) com prefixo "ab"</pre>
+            <p><strong>;</strong> — Separador para múltiplas operações de pilha alternativas.</p>
+            <pre class="code">a:(b#c;d#e)  # Reconhece "bac" ou "dae"</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+            <i class="fas fa-exclamation-circle me-2 text-danger"></i>O que significa &amp; (epsilon)?
+          </button>
+        </h2>
+        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p><strong>&amp;</strong> representa epsilon (ε), a cadeia vazia. É usado para:</p>
+            <ul>
+              <li>Transições sem ler símbolo de entrada</li>
+              <li>Operações de pilha sem empilhar/desempilhar</li>
+              <li>Permitir zero repetições em operadores</li>
+            </ul>
+            <pre class="code">(&amp;:a#b)   # Aceita cadeia vazia (n=0)
+&amp;*        # Aceita apenas cadeia vazia
+a&amp;b       # Equivalente a "ab" (& é ignorado)</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
+            <i class="fas fa-exclamation-circle me-2 text-danger"></i>Como gerar a imagem PNG do autômato?
+          </button>
+        </h2>
+        <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p><strong>Automaticamente:</strong> Ao compilar uma expressão, a imagem é gerada automaticamente em <code>static/automato_output.png</code>.</p>
+            <pre class="code">from expression import convertExpressionInPA
+
+posfixa, automato = convertExpressionInPA("(&amp;:a#b)")
+# Imagem gerada em: static/automato_output.png</pre>
+            <p><strong>Manualmente:</strong> Você pode gerar a imagem em qualquer momento:</p>
+            <pre class="code">automato.imprimir_imagem("meu_automato")
+# Gera: static/meu_automato.png</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq7">
+            <i class="fas fa-exclamation-circle me-2 text-danger"></i>Como exportar para JFLAP?
+          </button>
+        </h2>
+        <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p><strong>Automaticamente:</strong> Especifique um caminho ao compilar:</p>
+            <pre class="code">from expression import convertExpressionInPA
+
+posfixa, automato = convertExpressionInPA("(&amp;:a#b)", "meu_automato.jflap")
+# Arquivo salvo em: static/meu_automato.jflap</pre>
+            <p><strong>Manualmente:</strong></p>
+            <pre class="code">xml = automato.prepararXML()
+automato.salvarXML(xml, "./static/meu_automato.jflap")</pre>
+            <p>Abra o arquivo em <a href="https://www.jflap.org/" target="_blank">JFLAP</a> para visualizar e editar o autômato.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq8">
+            <i class="fas fa-exclamation-circle me-2 text-danger"></i>Qual é a performance com strings grandes?
+          </button>
+        </h2>
+        <div id="faq8" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            <p><strong>Complexidade:</strong> As operações de busca (find_all, replace_all) têm complexidade O(n²) no tamanho da string, pois testam todas as substrings possíveis.</p>
+            <p><strong>Otimizações:</strong></p>
+            <ul>
+              <li>Memoização automática de resultados</li>
+              <li>Cache de substrings já testadas</li>
+              <li>Limpar cache se necessário: <code>p.memo.clear()</code></li>
+            </ul>
+            <p><strong>Recomendação:</strong> Para strings muito grandes (> 10.000 caracteres), considere dividir em chunks menores.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="pt-4 border-top">
+    <div class="row">
+      <div class="col-md-6">
+        <small><i class="fas fa-info-circle me-2"></i>Documentação do Pushdown Operator. Trabalho de Conclusão de Curso apresentado à Universidade Federal do Tocantins, 2024.</small>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <a href="#" class="back-to-top"><i class="fas fa-arrow-up me-1"></i>Voltar ao topo</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const href = this.getAttribute('href');
+      if (href !== '#') {
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    });
+  });
+
+  window.addEventListener('scroll', () => {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.toc a');
+    
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      if (pageYOffset >= sectionTop - 200) {
+        current = section.getAttribute('id');
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.remove('text-primary');
+      link.style.fontWeight = '400';
+      if (link.getAttribute('href').slice(1) === current) {
+        link.classList.add('text-primary');
+        link.style.fontWeight = '600';
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pushdown Operator Playground</title>
+
+    <!-- Bootstrap 5 -->
+    <link 
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+        rel="stylesheet"
+    >
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        img.zoomable {
+            max-width: 300px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        img.zoomable:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-dark bg-primary mb-4">
+        <div class="container d-flex justify-content-between">
+
+            <span class="navbar-brand">Pushdown Operator Playground</span>
+
+            <!-- Botão Documentação -->
+            <a href="/documentacao" class="btn btn-light">
+                Documentação
+            </a>
+
+        </div>
+    </nav>
+
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title text-center mb-3">Digite a expressão desejada</h4>
+
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Expressão:</label>
+                                <input 
+                                    type="text" 
+                                    name="expression" 
+                                    class="form-control form-control-lg"
+                                    placeholder="Escreva aqui..."
+                                    required
+                                >
+                            </div>
+
+                            <button class="btn btn-primary w-100 btn-lg" type="submit">
+                                Enviar
+                            </button>
+                        </form>
+
+                        {% if valor_usuario %}
+                            <div class="alert alert-success mt-4">
+                                <h5 class="mb-3">Resultado processado</h5>
+
+                                <p>
+                                    <strong>Expressão Infixa:</strong><br>
+                                    <code>{{ valor_infixo }}</code>
+                                </p>
+
+                                <p>
+                                    <strong>Expressão Posfixa:</strong><br>
+                                    <code>{{ valor_postfixo }}</code>
+                                </p>
+
+                                <p class="mb-3">
+                                    <strong>Autômato gerado:</strong><br>
+                                    <img 
+                                        src="{{ automata_output }}" 
+                                        alt="Autômato" 
+                                        class="img-fluid rounded border zoomable mt-2"
+                                        onclick="abrirImagemGrande('{{ automata_output }}')"
+                                    >
+                                </p>
+
+                                <a href="{{ arquivo_jflap }}" 
+                                   download 
+                                   class="btn btn-outline-primary w-100 mb-2">
+                                    Baixar arquivo JFLAP
+                                </a>
+
+                                {% if valor_usuario %}
+                                    <div class="alert alert-success mt-4">
+                                        <a href="/testar?expressao={{ valor_usuario }}" 
+                                        class="btn btn-success w-100">
+                                            Testar Autômato
+                                        </a>
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle -->
+    <script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <!-- FUNÇÃO PARA ABRIR A IMAGEM GRANDE -->
+    <script>
+        function abrirImagemGrande(src) {
+            Swal.fire({
+                imageUrl: src,
+                imageWidth: '90%',
+                width: '95%',
+                padding: 0,
+                showConfirmButton: true,
+                confirmButtonText: "Fechar",
+                background: "transparent",
+            });
+        }
+    </script>
+
+    {% if erro %}
+        <script>
+        Swal.fire({
+            icon: "error",
+            title: "Erro ao processar",
+            text: "A expressão fornecida não pôde ser processada. Verifique a sintaxe. Erro: {{ response }}",
+            confirmButtonText: "OK",
+        });
+        </script>
+    {% endif %}
+
+    {% if erro_autômato %}
+        <script>
+        Swal.fire({
+            icon: "warning",
+            title: "Nenhum autômato disponível",
+            text: "Nenhuma expressão foi fornecida ainda. Gere um autômato antes de testar palavras.",
+            confirmButtonText: "OK"
+        }).then(() => {
+            window.location.href = "/";
+        });
+
+        </script>
+    {% endif %}
+
+</body>
+</html>
